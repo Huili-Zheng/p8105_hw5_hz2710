@@ -1,0 +1,65 @@
+---
+title: "hw5"
+author: "Huili Zheng"
+date: "11/20/2021"
+output: 
+  github_document:
+    pandoc_args: --webtex
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+knitr::opts_chunk$set(
+	echo = TRUE,
+	warning = FALSE,
+  message = FALSE,
+	fig.width = 8, 
+  fig.height = 6,
+  out.width = "90%"
+)
+theme_set(theme_gray(base_size = 10) + theme(legend.position = "bottom"))
+```
+
+
+
+
+##  Problem 2
+
+Read in and tidy the datasets:
+
+```{r}
+p2_df =
+  tibble(
+    file_name = list.files(path = './data', full.names = TRUE),
+    data = map(file_name, ~read_csv(.)),
+    group = case_when(
+      file_name %>% str_detect("con") ~ "control",
+      file_name %>% str_detect("exp") ~ "experiment",
+    ),
+    id = as.numeric(str_extract_all(file_name, "[0-9]+"))
+  ) %>% 
+  unnest(cols = c(data)) %>% 
+  pivot_longer(
+    week_1:week_8,
+    names_to = "week",
+    values_to = "value"
+  ) %>% 
+  mutate(
+    id = paste(group, "_", as.character(id), sep = ""),
+    week = as.numeric(str_extract_all(week, "[0-9]+"))
+  ) %>% 
+  select(group, id, week, value)
+p2_df
+```
+
+A spaghetti plot showing observations on each subject over time:
+
+```{r}
+p2_df %>% 
+  ggplot(aes(x = week, y = value, group = id, color = group)) +
+  geom_line() +
+  xlab("Week") +
+  ylab("Data")
+```
+
+*Comments:* The values of the experiment group increase over time and the overall values of experiment group are larger than those of control group after 6 weeks.
