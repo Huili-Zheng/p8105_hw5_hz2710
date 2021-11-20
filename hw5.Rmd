@@ -9,6 +9,7 @@ output:
 
 ```{r setup, include=FALSE}
 library(tidyverse)
+library(ggplot2)
 knitr::opts_chunk$set(
 	echo = TRUE,
 	warning = FALSE,
@@ -20,7 +21,114 @@ knitr::opts_chunk$set(
 theme_set(theme_gray(base_size = 10) + theme(legend.position = "bottom"))
 ```
 
+## Probelm 1
 
+```{r}
+homicide_df = 
+  read_csv("./data/homicide-data.csv", na = c("","Unknown")) %>%
+  mutate(
+    city_state = str_c(city, state),
+    resolution = case_when(
+      disposition == "Closed without arrest" ~ "unsolved",
+      disposition == "Open/No arrest" ~ "unsolved",
+      disposition == "Closed by arrest" ~ "solved"
+    )
+  ) %>%
+  relocate(city_state) %>%
+  filter(city != "TulsaAL")
+```
+
+Let's focus on Baltimore, MD.
+
+```{r}
+baltimore_df = 
+  homicide_df %>%
+  filter(city_state == "BaltimoreMD")
+
+baltimore_summary = 
+  baltimore_df %>%
+  summarize(
+    unsolved = sum(resolution == "unsolved"),
+    n = n()
+  )
+
+baltimore_test = 
+  prop.test(x = baltimore_summary %>% pull(unsolved), n = baltimore_summary %>% pull(n))
+
+baltimore_test %>%
+  broom::tidy()
+```
+
+Let's try to iterate across cities.
+
+First off, write a function and test some cities.
+
+```{r}
+prop_test_function = function(city_df){
+  
+  city_summary = 
+    city_df %>%
+    summarize(
+      unsolved = sum(resolution == "unsolved"),
+      n = n()
+    )
+  
+  city_test = 
+    prop.test(
+      x = city_summary %>% pull(unsolved),
+      n = city_summary %>% pull(n)
+    )
+  return(city_test)
+}
+
+prop_test_function(baltimore_df)
+
+homicide_df %>%
+  filter(city_state == "AlbuquerqueNM") %>%
+  prop_test_function()
+```
+
+Iterate across all cities.
+
+```{r}
+results_df =
+  homicide_df %>%
+  nest(data = uid:resolution) %>%
+  mutate(
+    test_results = map(data, prop_test_function),
+    tidy_results = map(test_results, broom::tidy)
+  ) %>%
+  select(city_state, tidy_results) %>%
+  unnest(tidy_results) %>%
+  select(city_state, estimate, starts_with(("conf")))
+
+```
+
+Try to make a plot showing estimates and confidence intervals.
+```{r}
+results_df %>%
+  mutate(city_state = fct_reorder(city_state, estimate)) %>%
+  ggplot(aes(x = city_state, y = estimate)) +
+  geom_point() +
+  geom_errorbar(aes(ymin = conf.low,  ymax = conf.high)) +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
+```
+
+```{r}
+homicide_df %>%
+  group_by(city_state) %>%
+  summarize(
+    unsolved = sum(resolution == "unsolved"),
+    n = n()
+  ) %>%
+  mutate(
+    test_results = map2(unsolved,n,prop.test), 
+    tidy_results = map(test_results, broom::tidy)
+  ) %>%
+  select(city_state, tidy_results) %>%
+  unnest(tidy_results) %>%
+  select(city_state, estimate, starts_with("conf"))
+```
 
 
 ##  Problem 2
