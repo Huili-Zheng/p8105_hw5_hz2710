@@ -219,3 +219,52 @@ p2_df %>%
 *Comments:* The values of the experiment group increase over time and
 the overall values of experiment group are larger than those of control
 group after 6 weeks.
+
+## Problem3
+
+First we read the dataset with missing values.
+
+``` r
+set.seed(10)
+iris_with_missing = iris %>% 
+  map_df(~replace(.x, sample(1:150, 20), NA)) %>%
+  mutate(Species = as.character(Species))
+```
+
+Then we create a function called `fill_NA`, which will take a vector as
+an argument, detect the input variable type and then fill missing values
+with the rules defined in the question.
+
+``` r
+fill_na = function(x){
+  
+  if (class(x) == "numeric") {
+    return(replace_na(x, mean(x, na.rm = TRUE)))
+  } else if (class(x) == "character") {
+    return(replace_na(x, "virginica")) 
+  }
+}
+```
+
+Lastly, apply this function to the columns of dataset using a map
+statement.
+
+``` r
+output = map_df(iris_with_missing, fill_na)
+output
+```
+
+    ## # A tibble: 150 × 5
+    ##    Sepal.Length Sepal.Width Petal.Length Petal.Width Species
+    ##           <dbl>       <dbl>        <dbl>       <dbl> <chr>  
+    ##  1         5.1          3.5         1.4         0.2  setosa 
+    ##  2         4.9          3           1.4         0.2  setosa 
+    ##  3         4.7          3.2         1.3         0.2  setosa 
+    ##  4         4.6          3.1         1.5         1.19 setosa 
+    ##  5         5            3.6         1.4         0.2  setosa 
+    ##  6         5.4          3.9         1.7         0.4  setosa 
+    ##  7         5.82         3.4         1.4         0.3  setosa 
+    ##  8         5            3.4         1.5         0.2  setosa 
+    ##  9         4.4          2.9         1.4         0.2  setosa 
+    ## 10         4.9          3.1         3.77        0.1  setosa 
+    ## # … with 140 more rows
