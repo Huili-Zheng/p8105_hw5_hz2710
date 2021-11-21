@@ -210,8 +210,7 @@ A spaghetti plot showing observations on each subject over time:
 p2_df %>% 
   ggplot(aes(x = week, y = value, group = id, color = group)) +
   geom_line() +
-  xlab("Week") +
-  ylab("Data")
+  labs(x = "Week", y = "Data", title = "Observations on each subject over time")
 ```
 
 <img src="hw5_files/figure-gfm/unnamed-chunk-8-1.png" width="90%" />

@@ -166,8 +166,7 @@ A spaghetti plot showing observations on each subject over time:
 p2_df %>% 
   ggplot(aes(x = week, y = value, group = id, color = group)) +
   geom_line() +
-  xlab("Week") +
-  ylab("Data")
+  labs(x = "Week", y = "Data", title = "Observations on each subject over time")
 ```
 
 *Comments:* The values of the experiment group increase over time and the overall values of experiment group are larger than those of control group after 6 weeks.
