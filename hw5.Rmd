@@ -25,7 +25,7 @@ theme_set(theme_gray(base_size = 10) + theme(legend.position = "bottom"))
 
 ```{r}
 homicide_df = 
-  read_csv("./data/homicide-data.csv", na = c("","Unknown")) %>%
+  read_csv("./homicide-data.csv", na = c("","Unknown")) %>%
   mutate(
     city_state = str_c(city, state),
     resolution = case_when(

@@ -7,7 +7,7 @@ Huili Zheng
 
 ``` r
 homicide_df = 
-  read_csv("./data/homicide-data.csv", na = c("","Unknown")) %>%
+  read_csv("./homicide-data.csv", na = c("","Unknown")) %>%
   mutate(
     city_state = str_c(city, state),
     resolution = case_when(
@@ -189,7 +189,7 @@ p2_df =
 p2_df
 ```
 
-    ## # A tibble: 417,592 × 4
+    ## # A tibble: 160 × 4
     ##    group   id         week value
     ##    <chr>   <chr>     <dbl> <dbl>
     ##  1 control control_1     1  0.2 
@@ -202,7 +202,7 @@ p2_df
     ##  8 control control_1     8  1.94
     ##  9 control control_2     1  1.13
     ## 10 control control_2     2 -0.88
-    ## # … with 417,582 more rows
+    ## # … with 150 more rows
 
 A spaghetti plot showing observations on each subject over time:
 
